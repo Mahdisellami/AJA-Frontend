@@ -22,6 +22,12 @@ const columns = [
   { 
     field: 'name', 
     headerName: 'Food Supplement', 
+    flex: 0.5,
+    renderHeader: (params: GridColumnHeaderParams) => (<strong>{params.colDef.headerName}</strong>),
+  },
+  { 
+    field: 'description', 
+    headerName: 'Description', 
     flex: 1,
     renderHeader: (params: GridColumnHeaderParams) => (<strong>{params.colDef.headerName}</strong>),
   },
@@ -193,6 +199,8 @@ const Questions = () => {
             },
           }}
           pageSizeOptions={[5]}
+          autoHeight
+          getRowHeight={ () => 'auto' }
         />
       }  
     </Box>
