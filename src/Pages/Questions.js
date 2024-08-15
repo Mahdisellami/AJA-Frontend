@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from "react-router-dom";
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -47,6 +48,7 @@ const Questions = () => {
   const [molecules, setMolecules] = useState([]);
 
   const theme = useTheme();
+  const params = useParams();
 
   useEffect(() => {
     fetch('http://system.aja.bio/backend/api/questions')
@@ -57,6 +59,7 @@ const Questions = () => {
       console.log('QUESTIONS')
       console.log(data);
       setQuestions(data);
+      setQuestion(params.id);
     });
   }, []);
 
@@ -77,16 +80,12 @@ const Questions = () => {
     console.log(event.target.value);
     setQuestion(event.target.value);
     setAnswer('');
-    setPriority('');
-    setScore('');
   };
 
   const handleChangeAnswer = (event) => {
     console.log('SELECTED ANSWER ID');
     console.log(event.target.value);
     setAnswer(event.target.value);
-    setPriority('');
-    setScore('');
   };
 
   const handleChangePriority = (event) => {
@@ -107,15 +106,34 @@ const Questions = () => {
       ?
         <>
           <FormControl fullWidth>
+            <InputLabel id="theme-select-label">Theme</InputLabel>
+            <Select
+              labelId="theme-select-label"
+              id="theme-select"
+              value={question}
+              label="Theme"
+              disabled
+            >
+              {questions?.filter((q) => q.isThemeRelated).map((q) => (
+                <MenuItem
+                  key={q.theme}
+                  value={q._id}
+                >
+                  {q.theme}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl fullWidth>
             <InputLabel id="question-select-label">Question</InputLabel>
             <Select
               labelId="question-select-label"
               id="question-select"
               value={question}
               label="Question"
-              onChange={handleChangeQuestion}
+              disabled
             >
-              {questions.filter((q) => q.isThemeRelated).map((q) => (
+              {questions?.filter((q) => q.isThemeRelated).map((q) => (
                 <MenuItem
                   key={q.text}
                   value={q._id}
@@ -134,7 +152,7 @@ const Questions = () => {
               label="Answer"
               onChange={handleChangeAnswer}
             >
-              {questions.find((q) => q._id===question).answers.map((a) => (
+              {questions?.find((q) => q._id===question)?.answers?.map((a) => (
                 <MenuItem
                   key={a.answer}
                   value={a._id}
@@ -144,45 +162,28 @@ const Questions = () => {
               ))}
             </Select>
           </FormControl>}
-          {answer && answer!=='' && <FormControl fullWidth>
-            <InputLabel id="priority-select-label">Priority</InputLabel>
-            <Select
-              labelId="priority-select-label"
-              id="priority-select"
-              value={priority}
-              label="Priority"
-              onChange={handleChangePriority}
-            >
-              {[{key: 'I', value: 1}, {key: 'II', value: 2}].map((p) => (
-                <MenuItem
-                  key={p.key}
-                  value={p.value}
-                >
-                  {p.key}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>}
-          {answer && answer!=='' && <FormControl fullWidth>
-            <InputLabel id="score-select-label">Score</InputLabel>
-            <Select
-              labelId="score-select-label"
-              id="score-select"
-              value={score}
-              label="Score"
-              onChange={handleChangeScore}
-            >
-              {[1,2,3,4,5,6,7,8,9,10].map((s) => (
-                <MenuItem
-                  key={s}
-                  value={s}
-                >
-                  {s}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>}
-          {priority && priority!=='' && score && score!=='' && 
+          {answer && answer!=='' && questions.filter((q) => !q.isThemeRelated).map((q) => (
+            <FormControl fullWidth>
+              <InputLabel id="priority-select-label">{q.theme}</InputLabel>
+              <Select
+                labelId="priority-select-label"
+                id="priority-select"
+                value=""
+                label={q.theme}
+                onChange={handleChangePriority}
+              >
+                {q.answers.map((a) => (
+                  <MenuItem
+                    key={a.answer}
+                    value={a._id}
+                  >
+                    {a.answer}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ))}
+          {answer && answer!=='' &&
             <Button variant="contained" onClick={fetchMolecules} endIcon={<BiotechIcon />}>
               Analyze
             </Button>
