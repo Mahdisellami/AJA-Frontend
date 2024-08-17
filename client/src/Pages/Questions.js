@@ -38,15 +38,17 @@ const columns = [
 const getRowId = (row) => {
   return row._id;
 }
- 
-const Questions = () => {  
-  const [questions, setQuestions] = useState([]);
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [priority, setPriority] = useState('');
-  const [score, setScore] = useState('');
-  const [molecules, setMolecules] = useState([]);
 
+const Questions = (props) => {  
+  const [answer, setAnswer] = useState('');
+  const [disabled, setDisabled] = useState(false);
+  const [molecules, setMolecules] = useState([]);
+  const [priority, setPriority] = useState('');
+  const [question, setQuestion] = useState('');
+  const [questions, setQuestions] = useState([]);
+  const [score, setScore] = useState('');
+
+  const { questionId } = props;
   const theme = useTheme();
   const params = useParams();
 
@@ -59,7 +61,10 @@ const Questions = () => {
       console.log('QUESTIONS')
       console.log(data);
       setQuestions(data);
-      setQuestion(params.id);
+      if (questionId) {
+        setQuestion(questionId);
+        setDisabled(true);
+      }
     });
   }, []);
 
@@ -112,7 +117,8 @@ const Questions = () => {
               id="theme-select"
               value={question}
               label="Theme"
-              disabled
+              disabled={disabled}
+              onChange={handleChangeQuestion}
             >
               {questions?.filter((q) => q.isThemeRelated).map((q) => (
                 <MenuItem
@@ -131,7 +137,8 @@ const Questions = () => {
               id="question-select"
               value={question}
               label="Question"
-              disabled
+              disabled={disabled}
+              onChange={handleChangeQuestion}
             >
               {questions?.filter((q) => q.isThemeRelated).map((q) => (
                 <MenuItem
