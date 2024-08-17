@@ -2,13 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from "react-router-dom";
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import BiotechIcon from '@mui/icons-material/Biotech';
 import { DataGrid } from '@mui/x-data-grid';
+
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 
 function getStyles(item, array, theme) {
   return {
@@ -34,16 +47,25 @@ const columns = [
   },
 ];
 
-
 const getRowId = (row) => {
   return row._id;
 }
 
+const emptyContraindications = {
+  sex: [],
+  woman: [],
+  age: [],
+  pathology: [],
+  medications: [],
+  alcohol: [],
+  smoking: [],
+}
+
 const Questions = (props) => {  
   const [answer, setAnswer] = useState('');
+  const [contraindications, setContraindications] = useState(emptyContraindications);
   const [disabled, setDisabled] = useState(false);
   const [molecules, setMolecules] = useState([]);
-  const [priority, setPriority] = useState('');
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]);
   const [score, setScore] = useState('');
@@ -93,10 +115,14 @@ const Questions = (props) => {
     setAnswer(event.target.value);
   };
 
-  const handleChangePriority = (event) => {
-    console.log('SELECTED PRIORITY VALUE');
-    console.log(event.target.value);
-    setPriority(event.target.value);
+  const handleChangeContraindication = (event, theme) => {
+    var {
+      target: { value },
+    } = event;
+    value =  value === 'string' ? value.split(',') : value;
+    console.log('SELECTED VALUE FOR ' + theme);
+    console.log(value);
+    setContraindications((prevContraindications) => { return { ...prevContraindications, [theme]: value }});
   };
 
   const handleChangeScore = (event) => {
@@ -171,18 +197,29 @@ const Questions = (props) => {
           </FormControl>}
           {answer && answer!=='' && questions.filter((q) => !q.isThemeRelated).map((q) => (
             <FormControl fullWidth>
-              <InputLabel id="priority-select-label">{q.theme}</InputLabel>
+              <InputLabel id="contraindication-select-label">{q.theme}</InputLabel>
               <Select
-                labelId="priority-select-label"
-                id="priority-select"
-                value=""
+                labelId="contraindication-select-label"
+                id="contraindication-select"
+                multiple
+                value={contraindications[q.theme] ? contraindications[q.theme] : []}
                 label={q.theme}
-                onChange={handleChangePriority}
+                onChange={(event) => handleChangeContraindication(event, q.theme)}
+                input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={questions?.find((item) => item._id===q._id)?.answers?.find((a) => a._id===value)?.answer} label={questions?.find((item) => item._id===q._id)?.answers?.find((a) => a._id===value)?.answer} />
+                    ))}
+                  </Box>
+                )}
+                MenuProps={MenuProps}
               >
                 {q.answers.map((a) => (
                   <MenuItem
                     key={a.answer}
                     value={a._id}
+                    style={getStyles(a._id, contraindications[q.theme] ? contraindications[q.theme] : [], theme)}
                   >
                     {a.answer}
                   </MenuItem>
